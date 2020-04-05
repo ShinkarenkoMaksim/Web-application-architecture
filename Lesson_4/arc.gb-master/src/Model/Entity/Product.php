@@ -11,6 +11,7 @@ class Product
      */
     private $id;
 
+
     /**
      * @var string
      */
@@ -31,6 +32,11 @@ class Product
         $this->id = $id;
         $this->name = $name;
         $this->price = $price;
+    }
+
+    public function __clone()
+    {
+        // Клонирование
     }
 
     /**
@@ -55,6 +61,30 @@ class Product
     public function getPrice(): float
     {
         return $this->price;
+    }
+
+    /**
+     * @param int $id
+     */
+    public function setId(int $id): void
+    {
+        $this->id = $id;
+    }
+
+    /**
+     * @param string $name
+     */
+    public function setName(string $name): void
+    {
+        $this->name = $name;
+    }
+
+    /**
+     * @param float $price
+     */
+    public function setPrice(float $price): void
+    {
+        $this->price = $price;
     }
 
     /**

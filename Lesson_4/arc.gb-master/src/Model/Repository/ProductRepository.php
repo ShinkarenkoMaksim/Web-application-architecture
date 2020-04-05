@@ -8,6 +8,27 @@ use Model\Entity\Product;
 
 class ProductRepository
 {
+
+    /**
+     * @var Product
+     */
+    private $product;
+
+    private function makeProductsList(array $ids = null): array
+    {
+        $this->product = new Product(0, '', 0);
+        $productList = [];
+        foreach ($this->getDataFromSource($ids == null ? [] : ['id' => $ids]) as $item) {
+            $product = clone $this->product;
+            $product->setId($item['id']);
+            $product->setName($item['name']);
+            $product->setPrice($item['price']);
+            $productList[] = $product;
+        }
+
+        return $productList;
+    }
+
     /**
      * Поиск продуктов по массиву id
      * @param int[] $ids
@@ -19,16 +40,7 @@ class ProductRepository
             return [];
         }
 
-        $productList = [];
-        foreach ($this->getDataFromSource(['id' => $ids]) as $item) {
-            $productList[] = new Product(
-                $item['id'],
-                $item['name'],
-                $item['price']
-            );
-        }
-
-        return $productList;
+        return $this->makeProductsList($ids);
     }
 
     /**
@@ -37,16 +49,7 @@ class ProductRepository
      */
     public function fetchAll(): array
     {
-        $productList = [];
-        foreach ($this->getDataFromSource() as $item) {
-            $productList[] = new Product(
-                $item['id'],
-                $item['name'],
-                $item['price']
-            );
-        }
-
-        return $productList;
+        return $this->makeProductsList();
     }
 
     /**
