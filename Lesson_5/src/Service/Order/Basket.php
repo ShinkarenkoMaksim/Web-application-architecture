@@ -4,18 +4,15 @@ declare(strict_types = 1);
 
 namespace Service\Order;
 
+use Facade\CheckoutFacade;
 use Model;
 use Model\Entity\Product;
 use Model\Repository\ProductRepository;
 use Service\Billing\Exception\BillingException;
-use Service\Billing\BillingInterface;
 use Service\Billing\Transfer\Card;
 use Service\Communication\Exception\CommunicationException;
-use Service\Communication\CommunicationInterface;
 use Service\Communication\Sender\Email;
-use Service\Discount\DiscountInterface;
 use Service\Discount\NullObject;
-use Service\User\SecurityInterface;
 use Service\User\Security;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
@@ -106,37 +103,8 @@ class Basket
 
         $security = new Security($this->session);
 
-        $this->checkoutProcess($discount, $billing, $security, $communication);
-    }
-
-    /**
-     * Проведение всех этапов заказа
-     * @param DiscountInterface $discount
-     * @param BillingInterface $billing
-     * @param SecurityInterface $security
-     * @param CommunicationInterface $communication
-     * @return void
-     * @throws BillingException
-     * @throws CommunicationException
-     */
-    public function checkoutProcess(
-        DiscountInterface $discount,
-        BillingInterface $billing,
-        SecurityInterface $security,
-        CommunicationInterface $communication
-    ): void {
-        $totalPrice = 0;
-        foreach ($this->getProductsInfo() as $product) {
-            $totalPrice += $product->getPrice();
-        }
-
-        $discount = $discount->getDiscount();
-        $totalPrice = $totalPrice - $totalPrice / 100 * $discount;
-
-        $billing->pay($totalPrice);
-
-        $user = $security->getUser();
-        $communication->process($user, 'checkout_template');
+        (new CheckoutFacade($discount, $billing, $security, $communication))
+            ->checkoutProcess($this->calculateProductsTotalPrice());
     }
 
     /**
